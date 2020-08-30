@@ -52,7 +52,7 @@ export class IRRemoteEmulatorPlatform implements DynamicPlatformPlugin {
    * must not be registered again to prevent "duplicate UUID" errors.
    */
   async discoverDevices() {
-    const devicesReq = await got.get<IPaginatedResponse<IDevice>>(`http://192.168.100.11:3001/devices?skipFirst=${0}&maxResultsLength=${100}`, {
+    const devicesReq = await got.get<IPaginatedResponse<IDevice>>(`http://192.168.100.11:3001/devices?skipFirst=0&maxResultsLength=100`, {
       responseType: 'json',
     });
 
