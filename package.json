@@ -1,19 +1,19 @@
 {
   "private": true,
-  "displayName": "Plugin Name",
-  "name": "ir-remote-emulator",
+  "displayName": "Emulatoru' pulii",
+  "name": "homebridge-ir-remote-emulator",
   "version": "1.0.0",
   "description": "A short description about what your plugin does.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git://github.com/USERNAME/GITHUB_PROJECT_NAME.git"
+    "url": "git://github.com/VanTudor/ir_remote_homebridge_plugin.git"
   },
   "bugs": {
-    "url": "https://github.com/USERNAME/GITHUB_PROJECT_NAME/issues"
+    "url": " https://github.com/VanTudor/ir_remote_homebridge_plugin"
   },
   "engines": {
-    "node": ">=10.17.0",
+    "node": ">=12.0.0",
     "homebridge": ">0.4.53"
   },
   "main": "dist/index.js",

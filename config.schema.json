@@ -1,5 +1,5 @@
 {
-  "pluginAlias": "IRREmoteEmulator",
+  "pluginAlias": "IRRemoteEmulator",
   "pluginType": "platform",
   "singular": true,
   "schema": {
