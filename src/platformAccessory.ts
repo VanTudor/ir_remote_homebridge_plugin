@@ -18,7 +18,9 @@ export class ExamplePlatformAccessory {
   private exampleStates = {
     On: false,
     Brightness: 100,
-    Hue: 0
+    Hue: 0,
+    Saturation: 50,
+    ColorTemperature: 10
   }
 
   constructor(
@@ -53,9 +55,11 @@ export class ExamplePlatformAccessory {
         .on('set', this.setBrightness.bind(this));       // SET - bind to the 'setBrightness` method below
 
     this.service.getCharacteristic(this.platform.Characteristic.Hue)
-      .on('set', this.setHue.bind(this));
-
-
+        .on('set', this.setHue.bind(this));
+    this.service.getCharacteristic(this.platform.Characteristic.Saturation)
+        .on('set', this.setSaturation.bind(this));
+    this.service.getCharacteristic(this.platform.Characteristic.ColorTemperature)
+        .on('set', this.setColorTemperature.bind(this));
   }
 
   /**
@@ -125,11 +129,37 @@ export class ExamplePlatformAccessory {
     // implement your own code to set the brightness
     this.exampleStates.Hue = value as number;
 
-    this.platform.log.debug('Set Characteristic Brightness -> ', value);
+    this.platform.log.debug('Set Characteristic HUE -> ', value);
 
     // you must call the callback function
     callback(null);
   }
+
+  async setSaturation(value: CharacteristicValue, callback: CharacteristicSetCallback) {
+    this.platform.log.debug('SATURATION VALUE:', value);
+
+    // implement your own code to set the brightness
+    this.exampleStates.Saturation = value as number;
+
+    this.platform.log.debug('Set Characteristic Saturation -> ', value);
+
+    // you must call the callback function
+    callback(null);
+  }
+
+
+  async setColorTemperature(value: CharacteristicValue, callback: CharacteristicSetCallback) {
+    this.platform.log.debug('ColorTemperature VALUE:', value);
+
+    // implement your own code to set the brightness
+    this.exampleStates.ColorTemperature = value as number;
+
+    this.platform.log.debug('Set Characteristic ColorTemperature -> ', value);
+
+    // you must call the callback function
+    callback(null);
+  }
+
 
   async getHue(value: CharacteristicValue, callback: CharacteristicSetCallback) {
     console.log('HUE VALUE:', value);
