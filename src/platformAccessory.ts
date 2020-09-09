@@ -138,6 +138,12 @@ export class ExamplePlatformAccessory {
     callback(null);
   }
 
+  getHue(callback: CharacteristicSetCallback) {
+    const hue = this.exampleStates.ColorTemperature;
+    this.platform.log.debug('Get Characteristic Hue ->', hue);
+    callback(null, hue);
+  }
+
   async setSaturation(value: CharacteristicValue, callback: CharacteristicSetCallback) {
     this.platform.log.debug('SATURATION VALUE:', value);
 
@@ -188,13 +194,4 @@ export class ExamplePlatformAccessory {
     // the second argument should be the value to return
     callback(null, colorTemperature);
   }
-
-
-  getHue(value: CharacteristicValue, callback: CharacteristicSetCallback) {
-    console.log('HUE VALUE:', value);
-    const hue = this.exampleStates.ColorTemperature;
-    this.platform.log.debug('Get Characteristic Hue ->', hue);
-    callback(null, hue);
-  }
-
 }
