@@ -18,6 +18,7 @@ export class ExamplePlatformAccessory {
   private exampleStates = {
     On: false,
     Brightness: 100,
+    Hue: 0
   }
 
   constructor(
@@ -45,52 +46,16 @@ export class ExamplePlatformAccessory {
     // register handlers for the On/Off Characteristic
     this.service.getCharacteristic(this.platform.Characteristic.On)
         .on('set', this.setOn.bind(this))                // SET - bind to the `setOn` method below
-        .on('get', this.getOn.bind(this));               // GET - bind to the `getOn` method below
+        .on('get', this.getOn.bind(this))                // GET - bind to the `getOn` method below
 
     // register handlers for the Brightness Characteristic
     this.service.getCharacteristic(this.platform.Characteristic.Brightness)
         .on('set', this.setBrightness.bind(this));       // SET - bind to the 'setBrightness` method below
 
+    this.service.getCharacteristic(this.platform.Characteristic.Hue)
+      .on('set', this.setHue.bind(this));
 
-    /**
-     * Creating multiple services of the same type.
-     *
-     * To avoid "Cannot add a Service with the same UUID another Service without also defining a unique 'subtype' property." error,
-     * when creating multiple services of the same type, you need to use the following syntax to specify a name and subtype id:
-     * this.accessory.getService('NAME') || this.accessory.addService(this.platform.Service.Lightbulb, 'NAME', 'USER_DEFINED_SUBTYPE_ID');
-     *
-     * The USER_DEFINED_SUBTYPE must be unique to the platform accessory (if you platform exposes multiple accessories, each accessory
-     * can use the same sub type id.)
-     */
 
-      // Example: add two "motion sensor" services to the accessory
-    const motionSensorOneService = this.accessory.getService('Motion Sensor One Name') ||
-      this.accessory.addService(this.platform.Service.MotionSensor, 'Motion Sensor One Name', 'YourUniqueIdentifier-1');
-
-    const motionSensorTwoService = this.accessory.getService('Motion Sensor Two Name') ||
-      this.accessory.addService(this.platform.Service.MotionSensor, 'Motion Sensor Two Name', 'YourUniqueIdentifier-2');
-
-    /**
-     * Updating characteristics values asynchronously.
-     *
-     * Example showing how to update the state of a Characteristic asynchronously instead
-     * of using the `on('get')` handlers.
-     * Here we change update the motion sensor trigger states on and off every 10 seconds
-     * the `updateCharacteristic` method.
-     *
-     */
-    let motionDetected = false;
-    setInterval(() => {
-      // EXAMPLE - inverse the trigger
-      motionDetected = !motionDetected;
-
-      // push the new value to HomeKit
-      motionSensorOneService.updateCharacteristic(this.platform.Characteristic.MotionDetected, motionDetected);
-      motionSensorTwoService.updateCharacteristic(this.platform.Characteristic.MotionDetected, !motionDetected);
-
-      this.platform.log.debug('Triggering motionSensorOneService:', motionDetected);
-      this.platform.log.debug('Triggering motionSensorTwoService:', !motionDetected);
-    }, 10000);
   }
 
   /**
@@ -151,6 +116,23 @@ export class ExamplePlatformAccessory {
     this.platform.log.debug('Set Characteristic Brightness -> ', value);
 
     // you must call the callback function
+    callback(null);
+  }
+
+  async setHue(value: CharacteristicValue, callback: CharacteristicSetCallback) {
+    this.platform.log.debug('HUE VALUE:', value);
+
+    // implement your own code to set the brightness
+    this.exampleStates.Hue = value as number;
+
+    this.platform.log.debug('Set Characteristic Brightness -> ', value);
+
+    // you must call the callback function
+    callback(null);
+  }
+
+  async getHue(value: CharacteristicValue, callback: CharacteristicSetCallback) {
+    console.log('HUE VALUE:', value);
     callback(null);
   }
 
