@@ -55,11 +55,14 @@ export class ExamplePlatformAccessory {
         .on('set', this.setBrightness.bind(this));       // SET - bind to the 'setBrightness` method below
 
     this.service.getCharacteristic(this.platform.Characteristic.Hue)
-        .on('set', this.setHue.bind(this));
+        .on('set', this.setHue.bind(this))
+        .on('get', this.getHue.bind(this));
     this.service.getCharacteristic(this.platform.Characteristic.Saturation)
-        .on('set', this.setSaturation.bind(this));
+        .on('set', this.setSaturation.bind(this))
+        .on('get', this.getSaturation.bind(this));
     this.service.getCharacteristic(this.platform.Characteristic.ColorTemperature)
-        .on('set', this.setColorTemperature.bind(this));
+        .on('set', this.setColorTemperature.bind(this))
+        .on('get', this.getColorTemperature.bind(this));
   }
 
   /**
@@ -147,6 +150,19 @@ export class ExamplePlatformAccessory {
     callback(null);
   }
 
+  getSaturation(callback: CharacteristicGetCallback) {
+
+    // implement your own code to check if the device is on
+    const saturation = this.exampleStates.Saturation;
+
+    this.platform.log.debug('Get Characteristic Saturation ->', saturation);
+
+    // you must call the callback function
+    // the first argument should be null if there were no errors
+    // the second argument should be the value to return
+    callback(null, saturation);
+  }
+
 
   async setColorTemperature(value: CharacteristicValue, callback: CharacteristicSetCallback) {
     this.platform.log.debug('ColorTemperature VALUE:', value);
@@ -160,10 +176,25 @@ export class ExamplePlatformAccessory {
     callback(null);
   }
 
+  getColorTemperature(callback: CharacteristicGetCallback) {
 
-  async getHue(value: CharacteristicValue, callback: CharacteristicSetCallback) {
+    // implement your own code to check if the device is on
+    const colorTemperature = this.exampleStates.ColorTemperature;
+
+    this.platform.log.debug('Get Characteristic ColorTemperature ->', colorTemperature);
+
+    // you must call the callback function
+    // the first argument should be null if there were no errors
+    // the second argument should be the value to return
+    callback(null, colorTemperature);
+  }
+
+
+  getHue(value: CharacteristicValue, callback: CharacteristicSetCallback) {
     console.log('HUE VALUE:', value);
-    callback(null);
+    const hue = this.exampleStates.ColorTemperature;
+    this.platform.log.debug('Get Characteristic Hue ->', hue);
+    callback(null, hue);
   }
 
 }
