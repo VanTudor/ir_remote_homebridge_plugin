@@ -178,12 +178,16 @@ export class ExamplePlatformAccessory {
         deviceColor = 'PINK';
         break;
       case (this.exampleStates.Hue < 345):
-        deviceColor = 'DARK_BLUE';
+        deviceColor = 'DARK_PINK';
         break;
       case (this.exampleStates.Hue < 360):
         deviceColor = 'RED';
         break;
       default: 'WHITE';
+    }
+    // override color if saturation low
+    if (this.exampleStates.Saturation < 90) {
+      deviceColor = 'WHITE';
     }
     if (this.exampleStates.DeviceColor !== deviceColor) {
       this.exampleStates.DeviceColor = deviceColor;
