@@ -58,9 +58,9 @@ export class ExamplePlatformAccessory {
     this.service.getCharacteristic(this.platform.Characteristic.Hue)
         .on('set', this.setHue.bind(this))
         .on('get', this.getHue.bind(this));
-    // this.service.getCharacteristic(this.platform.Characteristic.Saturation)
-    //     .on('set', this.setSaturation.bind(this))
-    //     .on('get', this.getSaturation.bind(this));
+    this.service.getCharacteristic(this.platform.Characteristic.Saturation)
+        .on('set', this.setSaturation.bind(this))
+        .on('get', this.getSaturation.bind(this));
     // this.service.getCharacteristic(this.platform.Characteristic.ColorTemperature)
     //     .on('set', this.setColorTemperature.bind(this))
     //     .on('get', this.getColorTemperature.bind(this));
