@@ -57,12 +57,12 @@ export class ExamplePlatformAccessory {
     this.service.getCharacteristic(this.platform.Characteristic.Hue)
         .on('set', this.setHue.bind(this))
         .on('get', this.getHue.bind(this));
-    this.service.getCharacteristic(this.platform.Characteristic.Saturation)
-        .on('set', this.setSaturation.bind(this))
-        .on('get', this.getSaturation.bind(this));
-    this.service.getCharacteristic(this.platform.Characteristic.ColorTemperature)
-        .on('set', this.setColorTemperature.bind(this))
-        .on('get', this.getColorTemperature.bind(this));
+    // this.service.getCharacteristic(this.platform.Characteristic.Saturation)
+    //     .on('set', this.setSaturation.bind(this))
+    //     .on('get', this.getSaturation.bind(this));
+    // this.service.getCharacteristic(this.platform.Characteristic.ColorTemperature)
+    //     .on('set', this.setColorTemperature.bind(this))
+    //     .on('get', this.getColorTemperature.bind(this));
   }
 
   /**
@@ -132,6 +132,58 @@ export class ExamplePlatformAccessory {
     // implement your own code to set the brightness
     this.exampleStates.Hue = value as number;
 
+    let dbColor: string;
+    switch (true) {
+      case (this.exampleStates.Hue < 4):
+        dbColor = 'RED';
+        break;
+      case (this.exampleStates.Hue < 8):
+        dbColor = 'DARK_ORANGE';
+        break;
+      case (this.exampleStates.Hue < 14):
+        dbColor = 'ORANGE';
+        break;
+      case (this.exampleStates.Hue < 38):
+        dbColor = 'LIGHT_ORANGE';
+        break;
+      case (this.exampleStates.Hue < 50):
+        dbColor = 'YELLOW';
+        break;
+      case (this.exampleStates.Hue < 100):
+        dbColor = 'LIGHT_GREEN';
+        break;
+      case (this.exampleStates.Hue < 150):
+        dbColor = 'GREEN';
+        break;
+      case (this.exampleStates.Hue < 180):
+        dbColor = 'TEAL';
+        break;
+      case (this.exampleStates.Hue < 200):
+        dbColor = 'LIGHT_BLUE';
+        break;
+      case (this.exampleStates.Hue < 210):
+        dbColor = 'BLUE';
+        break;
+      case (this.exampleStates.Hue < 250):
+        dbColor = 'DARK_BLUE';
+        break;
+      case (this.exampleStates.Hue < 270):
+        dbColor = 'PURPLE';
+        break;
+      case (this.exampleStates.Hue < 290):
+        dbColor = 'DARK_PINK';
+        break;
+      case (this.exampleStates.Hue < 325):
+        dbColor = 'PINK';
+        break;
+      case (this.exampleStates.Hue < 345):
+        dbColor = 'DARK_BLUE';
+        break;
+      case (this.exampleStates.Hue < 360):
+        dbColor = 'RED';
+        break;
+
+    }
     this.platform.log.debug('Set Characteristic HUE -> ', value);
 
     // you must call the callback function
@@ -139,59 +191,59 @@ export class ExamplePlatformAccessory {
   }
 
   getHue(callback: CharacteristicSetCallback) {
-    const hue = this.exampleStates.ColorTemperature;
+    const hue = this.exampleStates.Hue;
     this.platform.log.debug('Get Characteristic Hue ->', hue);
     callback(null, hue);
   }
 
-  async setSaturation(value: CharacteristicValue, callback: CharacteristicSetCallback) {
-    this.platform.log.debug('SATURATION VALUE:', value);
+  // async setSaturation(value: CharacteristicValue, callback: CharacteristicSetCallback) {
+  //   this.platform.log.debug('SATURATION VALUE:', value);
+  //
+  //   // implement your own code to set the brightness
+  //   this.exampleStates.Saturation = value as number;
+  //
+  //   this.platform.log.debug('Set Characteristic Saturation -> ', value);
+  //
+  //   // you must call the callback function
+  //   callback(null);
+  // }
+  //
+  // getSaturation(callback: CharacteristicGetCallback) {
+  //
+  //   // implement your own code to check if the device is on
+  //   const saturation = this.exampleStates.Saturation;
+  //
+  //   this.platform.log.debug('Get Characteristic Saturation ->', saturation);
+  //
+  //   // you must call the callback function
+  //   // the first argument should be null if there were no errors
+  //   // the second argument should be the value to return
+  //   callback(null, saturation);
+  // }
 
-    // implement your own code to set the brightness
-    this.exampleStates.Saturation = value as number;
 
-    this.platform.log.debug('Set Characteristic Saturation -> ', value);
-
-    // you must call the callback function
-    callback(null);
-  }
-
-  getSaturation(callback: CharacteristicGetCallback) {
-
-    // implement your own code to check if the device is on
-    const saturation = this.exampleStates.Saturation;
-
-    this.platform.log.debug('Get Characteristic Saturation ->', saturation);
-
-    // you must call the callback function
-    // the first argument should be null if there were no errors
-    // the second argument should be the value to return
-    callback(null, saturation);
-  }
-
-
-  async setColorTemperature(value: CharacteristicValue, callback: CharacteristicSetCallback) {
-    this.platform.log.debug('ColorTemperature VALUE:', value);
-
-    // implement your own code to set the brightness
-    this.exampleStates.ColorTemperature = value as number;
-
-    this.platform.log.debug('Set Characteristic ColorTemperature -> ', value);
-
-    // you must call the callback function
-    callback(null);
-  }
-
-  getColorTemperature(callback: CharacteristicGetCallback) {
-
-    // implement your own code to check if the device is on
-    const colorTemperature = this.exampleStates.ColorTemperature;
-
-    this.platform.log.debug('Get Characteristic ColorTemperature ->', colorTemperature);
-
-    // you must call the callback function
-    // the first argument should be null if there were no errors
-    // the second argument should be the value to return
-    callback(null, colorTemperature);
-  }
+  // async setColorTemperature(value: CharacteristicValue, callback: CharacteristicSetCallback) {
+  //   this.platform.log.debug('ColorTemperature VALUE:', value);
+  //
+  //   // implement your own code to set the brightness
+  //   this.exampleStates.ColorTemperature = value as number;
+  //
+  //   this.platform.log.debug('Set Characteristic ColorTemperature -> ', value);
+  //
+  //   // you must call the callback function
+  //   callback(null);
+  // }
+  //
+  // getColorTemperature(callback: CharacteristicGetCallback) {
+  //
+  //   // implement your own code to check if the device is on
+  //   const colorTemperature = this.exampleStates.ColorTemperature;
+  //
+  //   this.platform.log.debug('Get Characteristic ColorTemperature ->', colorTemperature);
+  //
+  //   // you must call the callback function
+  //   // the first argument should be null if there were no errors
+  //   // the second argument should be the value to return
+  //   callback(null, colorTemperature);
+  // }
 }
