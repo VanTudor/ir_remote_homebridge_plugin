@@ -20,7 +20,8 @@ export class ExamplePlatformAccessory {
     Brightness: 100,
     Hue: 0,
     Saturation: 50,
-    ColorTemperature: 10
+    ColorTemperature: 10,
+    DeviceColor: 'WHITE'
   }
 
   constructor(
@@ -132,59 +133,69 @@ export class ExamplePlatformAccessory {
     // implement your own code to set the brightness
     this.exampleStates.Hue = value as number;
 
-    let dbColor: string;
+    let deviceColor: string = '';
     switch (true) {
       case (this.exampleStates.Hue < 4):
-        dbColor = 'RED';
+        deviceColor = 'RED';
         break;
       case (this.exampleStates.Hue < 8):
-        dbColor = 'DARK_ORANGE';
+        deviceColor = 'DARK_ORANGE';
         break;
       case (this.exampleStates.Hue < 14):
-        dbColor = 'ORANGE';
+        deviceColor = 'ORANGE';
         break;
       case (this.exampleStates.Hue < 38):
-        dbColor = 'LIGHT_ORANGE';
+        deviceColor = 'LIGHT_ORANGE';
         break;
       case (this.exampleStates.Hue < 50):
-        dbColor = 'YELLOW';
+        deviceColor = 'YELLOW';
         break;
       case (this.exampleStates.Hue < 100):
-        dbColor = 'LIGHT_GREEN';
+        deviceColor = 'LIGHT_GREEN';
         break;
       case (this.exampleStates.Hue < 150):
-        dbColor = 'GREEN';
+        deviceColor = 'GREEN';
         break;
       case (this.exampleStates.Hue < 180):
-        dbColor = 'TEAL';
+        deviceColor = 'TEAL';
         break;
       case (this.exampleStates.Hue < 200):
-        dbColor = 'LIGHT_BLUE';
+        deviceColor = 'LIGHT_BLUE';
         break;
       case (this.exampleStates.Hue < 210):
-        dbColor = 'BLUE';
+        deviceColor = 'BLUE';
         break;
       case (this.exampleStates.Hue < 250):
-        dbColor = 'DARK_BLUE';
+        deviceColor = 'DARK_BLUE';
         break;
       case (this.exampleStates.Hue < 270):
-        dbColor = 'PURPLE';
+        deviceColor = 'PURPLE';
         break;
       case (this.exampleStates.Hue < 290):
-        dbColor = 'DARK_PINK';
+        deviceColor = 'DARK_PINK';
         break;
       case (this.exampleStates.Hue < 325):
-        dbColor = 'PINK';
+        deviceColor = 'PINK';
         break;
       case (this.exampleStates.Hue < 345):
-        dbColor = 'DARK_BLUE';
+        deviceColor = 'DARK_BLUE';
         break;
       case (this.exampleStates.Hue < 360):
-        dbColor = 'RED';
+        deviceColor = 'RED';
         break;
-
+      default: 'WHITE';
+    }
+    if (this.exampleStates.DeviceColor !== deviceColor) {
+      this.exampleStates.DeviceColor = deviceColor;
+      await got.post('http://192.168.100.11:3001/remoteControlEmulator/emitIrCodeByCommandAndRemoteControl', {
+        json: {
+          deviceId: this.accessory.UUID,
+          commandName: deviceColor
+        }
+      });
     }
     this.platform.log.debug('Set Characteristic HUE -> ', value);
+    this.platform.log.debug('Set Characteristic HUE. Selected DB color -> ', deviceColor);
 
     // you must call the callback function
     callback(null);
@@ -196,30 +207,45 @@ export class ExamplePlatformAccessory {
     callback(null, hue);
   }
 
-  // async setSaturation(value: CharacteristicValue, callback: CharacteristicSetCallback) {
-  //   this.platform.log.debug('SATURATION VALUE:', value);
-  //
-  //   // implement your own code to set the brightness
-  //   this.exampleStates.Saturation = value as number;
-  //
-  //   this.platform.log.debug('Set Characteristic Saturation -> ', value);
-  //
-  //   // you must call the callback function
-  //   callback(null);
-  // }
-  //
-  // getSaturation(callback: CharacteristicGetCallback) {
-  //
-  //   // implement your own code to check if the device is on
-  //   const saturation = this.exampleStates.Saturation;
-  //
-  //   this.platform.log.debug('Get Characteristic Saturation ->', saturation);
-  //
-  //   // you must call the callback function
-  //   // the first argument should be null if there were no errors
-  //   // the second argument should be the value to return
-  //   callback(null, saturation);
-  // }
+  async setSaturation(value: CharacteristicValue, callback: CharacteristicSetCallback) {
+    this.platform.log.debug('SATURATION VALUE:', value);
+
+    // implement your own code to set the brightness
+    this.exampleStates.Saturation = value as number;
+    let deviceColor: string = '';
+
+    if (this.exampleStates.Saturation < 90) {
+      deviceColor = 'WHITE';
+    }
+    if (this.exampleStates.DeviceColor !== deviceColor) {
+      this.exampleStates.DeviceColor = deviceColor;
+      await got.post('http://192.168.100.11:3001/remoteControlEmulator/emitIrCodeByCommandAndRemoteControl', {
+        json: {
+          deviceId: this.accessory.UUID,
+          commandName: deviceColor
+        }
+      });
+    }
+    this.platform.log.debug('Set Characteristic Saturation. Selected DB color -> ', deviceColor);
+
+    this.platform.log.debug('Set Characteristic Saturation -> ', value);
+
+    // you must call the callback function
+    callback(null);
+  }
+
+  getSaturation(callback: CharacteristicGetCallback) {
+
+    // implement your own code to check if the device is on
+    const saturation = this.exampleStates.Saturation;
+
+    this.platform.log.debug('Get Characteristic Saturation ->', saturation);
+
+    // you must call the callback function
+    // the first argument should be null if there were no errors
+    // the second argument should be the value to return
+    callback(null, saturation);
+  }
 
 
   // async setColorTemperature(value: CharacteristicValue, callback: CharacteristicSetCallback) {
