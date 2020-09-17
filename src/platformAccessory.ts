@@ -44,7 +44,7 @@ export type TColorCommands = ECommandTypes.DARK_ORANGE |
 export type TOnOffCommands = ECommandTypes.ON | ECommandTypes.OFF;
 
 function getBrightnessInstructions(prevValue: number, currentValue: number): { steps: number, command: TBrightnessCommands } {
-  const diff = Math.floor(prevValue / 25) - Math.floor(currentValue / 25);
+  const diff = Math.floor(prevValue / 20) - Math.floor(currentValue / 20);
 
   return {
     steps: Math.abs(diff),
@@ -176,15 +176,15 @@ export class ExamplePlatformAccessory {
     let steps: number;
     let command: TBrightnessCommands;
     switch (true) {
-      case brightness <= 25:
-        steps = 4;
+      case brightness <= 20:
+        steps = 5;
         command = ECommandTypes.BRIGHTNESS_DOWN;
         break;
-      case brightness <= 75:
+      case brightness <= 80:
         ({ steps, command} = getBrightnessInstructions(this.state.Brightness, brightness));
         break;
       default:
-        steps = 4;
+        steps = 5;
         command = ECommandTypes.BRIGHTNESS_UP;
     }
     this.platform.log.debug(`Set Characteristic Brightness preValue: ${this.state.Brightness}, newValue: ${brightness}, steps: ${steps}, command: ${command}`);
