@@ -180,9 +180,6 @@ export class ExamplePlatformAccessory {
         steps = 4;
         command = ECommandTypes.BRIGHTNESS_DOWN;
         break;
-      case brightness <= 50:
-        ({ steps, command} = getBrightnessInstructions(this.state.Brightness, brightness));
-        break;
       case brightness <= 75:
         ({ steps, command} = getBrightnessInstructions(this.state.Brightness, brightness));
         break;
@@ -190,7 +187,8 @@ export class ExamplePlatformAccessory {
         steps = 4;
         command = ECommandTypes.BRIGHTNESS_UP;
     }
-
+    this.platform.log.debug(`Set Characteristic Brightness preValue: ${this.state.Brightness}, newValue: ${brightness}, steps: ${steps}, command: ${command}`);
+    this.state.Brightness = brightness;
     for (let i = 0; i < steps; i++) {
       await got.post('http://192.168.100.11:3001/remoteControlEmulator/emitIrCodeByCommandAndRemoteControl', {
         json: {
@@ -199,7 +197,6 @@ export class ExamplePlatformAccessory {
         }
       });
     }
-    this.platform.log.debug(`Set Characteristic Brightness value: ${value}, steps: ${steps}, command: ${command}`);
     callback(null);
   }
 
