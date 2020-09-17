@@ -44,7 +44,7 @@ export type TColorCommands = ECommandTypes.DARK_ORANGE |
 export type TOnOffCommands = ECommandTypes.ON | ECommandTypes.OFF;
 
 function getBrightnessInstructions(prevValue: number, currentValue: number): { steps: number, command: TBrightnessCommands } {
-  const diff = (prevValue % 25) - (currentValue % 25);
+  const diff = Math.floor(prevValue / 25) - Math.floor(currentValue / 25);
 
   return {
     steps: Math.abs(diff),
