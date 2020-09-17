@@ -3,6 +3,54 @@ import { Service, PlatformAccessory, CharacteristicValue, CharacteristicSetCallb
 
 import { IRRemoteEmulatorPlatform } from './platform';
 
+export enum ECommandTypes {
+  BRIGHTNESS_UP = 'BRIGHTNESS_UP',
+  BRIGHTNESS_DOWN = 'BRIGHTNESS_DOWN',
+  ON = 'ON',
+  OFF = 'OFF',
+  DARK_ORANGE = 'DARK_ORANGE',
+  ORANGE = 'ORANGE',
+  LIGHT_ORANGE = 'LIGHT_ORANGE',
+  YELLOW = 'YELLOW',
+  LIGHT_GREEN = 'LIGHT_GREEN',
+  GREEN = 'GREEN',
+  TEAL = 'TEAL',
+  LIGHT_BLUE = 'LIGHT_BLUE',
+  BLUE = 'BLUE',
+  DARK_BLUE = 'DARK_BLUE',
+  PURPLE = 'PURPLE',
+  PINK = 'PINK',
+  DARK_PINK = 'DARK_PINK',
+  RED = 'RED',
+  WHITE = 'WHITE'
+}
+
+export type TBrightnessCommands = ECommandTypes.BRIGHTNESS_UP | ECommandTypes.BRIGHTNESS_DOWN;
+export type TColorCommands = ECommandTypes.DARK_ORANGE |
+  ECommandTypes.ORANGE |
+  ECommandTypes.LIGHT_ORANGE |
+  ECommandTypes.YELLOW |
+  ECommandTypes.LIGHT_GREEN |
+  ECommandTypes.GREEN |
+  ECommandTypes.TEAL |
+  ECommandTypes.LIGHT_BLUE |
+  ECommandTypes.BLUE |
+  ECommandTypes.DARK_BLUE |
+  ECommandTypes.PURPLE |
+  ECommandTypes.PINK |
+  ECommandTypes.DARK_PINK |
+  ECommandTypes.RED |
+  ECommandTypes.WHITE;
+export type TOnOffCommands = ECommandTypes.ON | ECommandTypes.OFF;
+
+function getBrightnessInstructions(prevValue: number, currentValue: number): { steps: number, command: TBrightnessCommands } {
+  const diff = (prevValue % 25) - (currentValue % 25);
+
+  return {
+    steps: Math.abs(diff),
+    command: diff > 0 ? ECommandTypes.BRIGHTNESS_UP : ECommandTypes.BRIGHTNESS_DOWN
+  }
+}
 /**
  * Platform Accessory
  * An instance of this class is created for each accessory your platform registers
@@ -15,7 +63,7 @@ export class ExamplePlatformAccessory {
    * These are just used to create a working example
    * You should implement your own code to track the state of your accessory
    */
-  private exampleStates = {
+  private state = {
     On: false,
     Brightness: 100,
     Hue: 0,
@@ -72,14 +120,15 @@ export class ExamplePlatformAccessory {
    */
   async setOn(value: CharacteristicValue, callback: CharacteristicSetCallback) {
 
+    const commandName: TOnOffCommands = !!value ? ECommandTypes.ON : ECommandTypes.OFF
     // implement your own code to turn your device on/off
     await got.post('http://192.168.100.11:3001/remoteControlEmulator/emitIrCodeByCommandAndRemoteControl', {
       json: {
         deviceId: this.accessory.UUID,
-        commandName: !!value ? 'On' : 'Off'
+        commandName,
       }
     });
-    this.exampleStates.On = value as boolean;
+    this.state.On = value as boolean;
 
     this.platform.log.debug('Set Characteristic On ->', value, !!value);
 
@@ -91,7 +140,7 @@ export class ExamplePlatformAccessory {
    * Handle the "GET" requests from HomeKit
    * These are sent when HomeKit wants to know the current state of the accessory, for example, checking if a Light bulb is on.
    *
-   * GET requests should return as fast as possbile. A long delay here will result in
+   * GET requests should return as fast as possible. A long delay here will result in
    * HomeKit being unresponsive and a bad user experience in general.
    *
    * If your device takes time to respond you should update the status of your device
@@ -102,7 +151,7 @@ export class ExamplePlatformAccessory {
   getOn(callback: CharacteristicGetCallback) {
 
     // implement your own code to check if the device is on
-    const isOn = this.exampleStates.On;
+    const isOn = this.state.On;
 
     this.platform.log.debug('Get Characteristic On ->', isOn);
 
@@ -113,84 +162,111 @@ export class ExamplePlatformAccessory {
   }
 
   /**
-   * Handle "SET" requests from HomeKit
-   * These are sent when the user changes the state of an accessory, for example, changing the Brightness
+   * This are sent when the user changes the state of an accessory from the HomeKit app.
+   * The OSRAM light bulb has only 4 levels of brightness, so this method will fit any value received
+   * accordingly (0-25% to step 1, 26-50% to step 2, 51-75% to step 3 and 76-100% to step 4).
+   *
+   * Since the light bulb's state is flaky, we need a way to reset it. The highest and lowest sections
+   * of the interval do this, i.e. setting the brightness value to 0-25% will cause 4 BRIGHTNESS_DOWN
+   * commands to be issued. Similarly, setting it to 76-100% will cause 4 BRIGHTNESS_UP commands to be
+   * issued.
    */
-  setBrightness(value: CharacteristicValue, callback: CharacteristicSetCallback) {
+  async setBrightness(value: CharacteristicValue, callback: CharacteristicSetCallback) {
+    const brightness = value as number;
+    let steps: number;
+    let command: TBrightnessCommands;
+    switch (true) {
+      case brightness <= 25:
+        steps = 4;
+        command = ECommandTypes.BRIGHTNESS_DOWN;
+        break;
+      case brightness <= 50:
+        ({ steps, command} = getBrightnessInstructions(this.state.Brightness, brightness));
+        break;
+      case brightness <= 75:
+        ({ steps, command} = getBrightnessInstructions(this.state.Brightness, brightness));
+        break;
+      default:
+        steps = 4;
+        command = ECommandTypes.BRIGHTNESS_UP;
+    }
 
-    // implement your own code to set the brightness
-    this.exampleStates.Brightness = value as number;
-
-    this.platform.log.debug('Set Characteristic Brightness -> ', value);
-
-    // you must call the callback function
+    for (let i = 0; i < steps; i++) {
+      await got.post('http://192.168.100.11:3001/remoteControlEmulator/emitIrCodeByCommandAndRemoteControl', {
+        json: {
+          deviceId: this.accessory.UUID,
+          commandName: command
+        }
+      });
+    }
+    this.platform.log.debug(`Set Characteristic Brightness value: ${value}, steps: ${steps}, command: ${command}`);
     callback(null);
   }
 
   async setHue(value: CharacteristicValue, callback: CharacteristicSetCallback) {
     this.platform.log.debug('HUE VALUE:', value);
 
-    // implement your own code to set the brightness
-    this.exampleStates.Hue = value as number;
+    this.state.Hue = value as number;
 
-    let deviceColor: string = '';
+    let deviceColor: TColorCommands;
     switch (true) {
-      case (this.exampleStates.Hue < 4):
-        deviceColor = 'RED';
+      case (this.state.Hue < 4):
+        deviceColor = ECommandTypes.RED;
         break;
-      case (this.exampleStates.Hue < 8):
-        deviceColor = 'DARK_ORANGE';
+      case (this.state.Hue < 8):
+        deviceColor = ECommandTypes.DARK_ORANGE;
         break;
-      case (this.exampleStates.Hue < 14):
-        deviceColor = 'ORANGE';
+      case (this.state.Hue < 14):
+        deviceColor = ECommandTypes.ORANGE;
         break;
-      case (this.exampleStates.Hue < 38):
-        deviceColor = 'LIGHT_ORANGE';
+      case (this.state.Hue < 38):
+        deviceColor = ECommandTypes.LIGHT_ORANGE;
         break;
-      case (this.exampleStates.Hue < 50):
-        deviceColor = 'YELLOW';
+      case (this.state.Hue < 50):
+        deviceColor = ECommandTypes.YELLOW;
         break;
-      case (this.exampleStates.Hue < 100):
-        deviceColor = 'LIGHT_GREEN';
+      case (this.state.Hue < 100):
+        deviceColor = ECommandTypes.LIGHT_GREEN;
         break;
-      case (this.exampleStates.Hue < 150):
-        deviceColor = 'GREEN';
+      case (this.state.Hue < 150):
+        deviceColor = ECommandTypes.GREEN;
         break;
-      case (this.exampleStates.Hue < 180):
-        deviceColor = 'TEAL';
+      case (this.state.Hue < 180):
+        deviceColor = ECommandTypes.TEAL;
         break;
-      case (this.exampleStates.Hue < 200):
-        deviceColor = 'LIGHT_BLUE';
+      case (this.state.Hue < 200):
+        deviceColor = ECommandTypes.LIGHT_BLUE;
         break;
-      case (this.exampleStates.Hue < 210):
-        deviceColor = 'BLUE';
+      case (this.state.Hue < 210):
+        deviceColor = ECommandTypes.BLUE;
         break;
-      case (this.exampleStates.Hue < 250):
-        deviceColor = 'DARK_BLUE';
+      case (this.state.Hue < 250):
+        deviceColor = ECommandTypes.DARK_BLUE;
         break;
-      case (this.exampleStates.Hue < 270):
-        deviceColor = 'PURPLE';
+      case (this.state.Hue < 270):
+        deviceColor = ECommandTypes.PURPLE;
         break;
-      case (this.exampleStates.Hue < 290):
-        deviceColor = 'DARK_PINK';
+      case (this.state.Hue < 290):
+        deviceColor = ECommandTypes.DARK_PINK;
         break;
-      case (this.exampleStates.Hue < 325):
-        deviceColor = 'PINK';
+      case (this.state.Hue < 325):
+        deviceColor = ECommandTypes.PINK;
         break;
-      case (this.exampleStates.Hue < 345):
-        deviceColor = 'DARK_PINK';
+      case (this.state.Hue < 345):
+        deviceColor = ECommandTypes.DARK_PINK;
         break;
-      case (this.exampleStates.Hue < 360):
-        deviceColor = 'RED';
+      case (this.state.Hue < 360):
+        deviceColor = ECommandTypes.RED;
         break;
-      default: 'WHITE';
+      default:
+        deviceColor = ECommandTypes.WHITE;
     }
     // override color if saturation low
-    if (this.exampleStates.Saturation < 90) {
-      deviceColor = 'WHITE';
+    if (this.state.Saturation < 90) {
+      deviceColor = ECommandTypes.WHITE;
     }
-    if (this.exampleStates.DeviceColor !== deviceColor) {
-      this.exampleStates.DeviceColor = deviceColor;
+    if (this.state.DeviceColor !== deviceColor) {
+      this.state.DeviceColor = deviceColor;
       await got.post('http://192.168.100.11:3001/remoteControlEmulator/emitIrCodeByCommandAndRemoteControl', {
         json: {
           deviceId: this.accessory.UUID,
@@ -206,7 +282,7 @@ export class ExamplePlatformAccessory {
   }
 
   getHue(callback: CharacteristicSetCallback) {
-    const hue = this.exampleStates.Hue;
+    const hue = this.state.Hue;
     this.platform.log.debug('Get Characteristic Hue ->', hue);
     callback(null, hue);
   }
@@ -214,15 +290,14 @@ export class ExamplePlatformAccessory {
   async setSaturation(value: CharacteristicValue, callback: CharacteristicSetCallback) {
     this.platform.log.debug('SATURATION VALUE:', value);
 
-    // implement your own code to set the brightness
-    this.exampleStates.Saturation = value as number;
+    this.state.Saturation = value as number;
     let deviceColor: string = '';
 
-    if (this.exampleStates.Saturation < 90) {
+    if (this.state.Saturation < 90) {
       deviceColor = 'WHITE';
     }
-    if (this.exampleStates.DeviceColor !== deviceColor) {
-      this.exampleStates.DeviceColor = deviceColor;
+    if (this.state.DeviceColor !== deviceColor) {
+      this.state.DeviceColor = deviceColor;
       await got.post('http://192.168.100.11:3001/remoteControlEmulator/emitIrCodeByCommandAndRemoteControl', {
         json: {
           deviceId: this.accessory.UUID,
@@ -241,7 +316,7 @@ export class ExamplePlatformAccessory {
   getSaturation(callback: CharacteristicGetCallback) {
 
     // implement your own code to check if the device is on
-    const saturation = this.exampleStates.Saturation;
+    const saturation = this.state.Saturation;
 
     this.platform.log.debug('Get Characteristic Saturation ->', saturation);
 
@@ -256,7 +331,7 @@ export class ExamplePlatformAccessory {
   //   this.platform.log.debug('ColorTemperature VALUE:', value);
   //
   //   // implement your own code to set the brightness
-  //   this.exampleStates.ColorTemperature = value as number;
+  //   this.state.ColorTemperature = value as number;
   //
   //   this.platform.log.debug('Set Characteristic ColorTemperature -> ', value);
   //
@@ -267,7 +342,7 @@ export class ExamplePlatformAccessory {
   // getColorTemperature(callback: CharacteristicGetCallback) {
   //
   //   // implement your own code to check if the device is on
-  //   const colorTemperature = this.exampleStates.ColorTemperature;
+  //   const colorTemperature = this.state.ColorTemperature;
   //
   //   this.platform.log.debug('Get Characteristic ColorTemperature ->', colorTemperature);
   //
