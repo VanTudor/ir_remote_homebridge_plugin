@@ -48,7 +48,7 @@ function getBrightnessInstructions(prevValue: number, currentValue: number): { s
 
   return {
     steps: Math.abs(diff),
-    command: diff > 0 ? ECommandTypes.BRIGHTNESS_UP : ECommandTypes.BRIGHTNESS_DOWN
+    command: diff < 0 ? ECommandTypes.BRIGHTNESS_UP : ECommandTypes.BRIGHTNESS_DOWN
   }
 }
 /**
